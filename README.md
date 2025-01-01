@@ -2,16 +2,22 @@
 
 ![](.images/cover.png)
 
-This repo provides a script to be run on Mac/Linux developer computer that makes [`probe-rs`](https://github.com/probe-rs/probe-rs) running *on another computer* feel like a local tool.
+This repo provides a script to be run on a Mac/Linux developer account that makes [`probe-rs`](https://github.com/probe-rs/probe-rs) running *on another computer* feel like a local tool.
 
 This allows:
 
 - *airgapping* the attached electronics from the main development computer.
 - developing open source code so that people can choose, whether they prefer local or remote `probe-rs`, without *any changes* to the build files
 
+**Supported commands**
+
+`help`, `list`, `info`, `erase`, `reset`, `run`
+
 ## Requirements
 
-- A Raspberry Pi 3B with a stable IP address
+- A Raspberry Pi 3B
+
+	- ..with a stable IP address
 
 	Use `ifconfig` to see the IP address. Below, we use `192.168.1.199` (replace with yours!).
 
