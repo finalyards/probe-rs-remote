@@ -6,7 +6,7 @@ This repo provides a script to be run on a Mac/Linux developer account that make
 
 This allows:
 
-- *airgapping* the attached electronics from the main development computer.
+- galvanic separation of the attached electronics from the main development computer
 - developing open source code so that people can choose, whether they prefer local or remote `probe-rs`, without *any changes* to the build files
 
 **Supported commands**
