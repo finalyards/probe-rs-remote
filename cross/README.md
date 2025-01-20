@@ -1,10 +1,16 @@
 # Cross compiling `probe-rs` for Raspberry Pi 3B 
 
-- using Multipass, no Docker Desktop needed
+Using Multipass, no Docker Desktop needed.
 
+>Note: If you have Windows + WSL2, with Docker Desktop installed, these instructions can be followed.
 
-Instructions for cross-compiling Rust binaries (such as the `probe-rs` tool) to the [Raspberry Pi 3B](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) platform. This platform (though having 1GB of RAM) is not sufficient for Rust compiler stack. You can adopt this setup for cross-compiling other such tools.
+Instructions for cross-compiling Rust binaries (`probe-rs`, in particular) to the [Raspberry Pi 3B](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) platform. This platform (though having 1GB of RAM) is not sufficient for Rust compiler stack.<sup>`|1|`</sup> You can adopt this setup for cross-compiling other such tools.
 
+<small>`|1|`: You can get around the limitations [with `--jobs 1`](https://matrix.to/#/#probe-rs:matrix.org/$177zGb6oHLGzurXXi5hpYCb_tihbzUVaFG07c8QhJos). But compilation will take almost 2 hours.</small>
+
+>WARN! The [`rustembedded/cross`](https://hub.docker.com/r/rustembedded/cross) Docker image used by these instructions (which are from the `probe-rs` documentation) has been:
+>
+> *"Updated over 3 years ago".*
 
 ## Requirements
 
@@ -16,14 +22,19 @@ Instructions for cross-compiling Rust binaries (such as the `probe-rs` tool) to 
 Developed on:
 - macOS 15.2
 - Multipass 1.15.0
+
+- Windows 10 Home
+- WSL 2.3.26.0
 -->
 
 ## Steps
 
 ### 1. Create a Docker-containing VM
 
+>WSL2: If using WSL2, you already have an Ubuntu environment. Skip to next.
+
 ```
-$ multipass launch docker --disk 20G --mem 4GB --cpus 4
+$ multipass launch docker --memory 4GB --cpus 4
 Starting docker /
 [...]
 ```
@@ -48,17 +59,17 @@ The rest of the commands we'll execute within this Ubuntu VM environment.
 The [`mp`](https://github.com/akauppi/mp) repo has instructions for setting up a Rust build environment. We'll reuse it here, by downloading it into the VM.
 
 ```
-ubuntu@docker:~$ git clone --depth=1 https://github.com/akauppi/mp.git
+[ubuntu]~$ git clone --depth=1 https://github.com/akauppi/mp.git
 ```
 
 ```
-ubuntu@docker:~$ chmod a+x mp/rust/linux/*.sh
+[ubuntu]~$ chmod a+x mp/rust/linux/*.sh
 ```
 
 That allows us to execute the files under `rust/linux/`:
 
 ```
-ubuntu@docker:~$ mp/rust/linux/rustup.sh
+[ubuntu]~$ mp/rust/linux/rustup.sh
 [...]
 To ginfo: default toolchain set to 'stable-x86_64-unknown-linux-gnu'
 
@@ -68,20 +79,20 @@ To ginfo: default toolchain set to 'stable-x86_64-unknown-linux-gnu'
 The `cargo` ecosystem is now installed, but to reach it in current prompt:
 
 ```
-ubuntu@docker:~$ . $HOME/.cargo/env
+[ubuntu]~$ . $HOME/.cargo/env
 ```
 
 >Testing:
 >
 >```
 >$ rustc --version
->rustc 1.83.0 (90b35a623 2024-11-26)
+>rustc 1.84.0 (9fc6b4312 2025-01-07)
 >```
 
 Let's install also `rustfmt`:
 
 ```
-ubuntu@docker:~$ rustup component add rustfmt
+[ubuntu]~$ rustup component add rustfmt
 info: downloading component 'rustfmt'
 info: installing component 'rustfmt'
 ```
@@ -94,12 +105,12 @@ info: installing component 'rustfmt'
 #### 3.1 Create a Docker image
 
 ```
-ubuntu@docker:~$ mkdir crossimage
+[ubuntu]~$ mkdir crossimage
 ```
 
 ```
-ubuntu@docker:~$ cat > crossimage/Dockerfile <<EOF
-FROM rustembedded/cross:armv7-unknown-linux-gnueabihf-0.2.1
+[ubuntu]~$ cat > crossimage/Dockerfile <<EOF
+FROM rustembedded/cross:armv7-unknown-linux-gnueabihf
 ENV PKG_CONFIG_ALLOW_CROSS=1
 ENV PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig
 RUN dpkg --add-architecture armhf && \
@@ -109,24 +120,25 @@ EOF
 ```
 
 ```
-ubuntu@docker:~$ docker build -t crossimage crossimage/
+[ubuntu]~$ docker build -t crossimage crossimage/
 [...]
- => => naming to docker.io/library/crossimage		0.0s
+ => => naming to docker.io/library/crossimage    0.0s
 ```
 
-We now have a `crossimage` Docker image built:
+We now have a `crossimage` Docker image built.
 
+>Testing:
+>
 >```
 >$ docker images
->REPOSITORY     TAG       IMAGE ID       CREATED         SIZE
->crossimage     latest    87cdd66eebcc   3 minutes ago   1.04GB
 >[...]
+>crossimage     latest    87cdd66eebcc   3 minutes ago   1.04GB
 >```
 
 #### 3.2 Install `cross` add-on
 
 ```
-ubuntu@docker:~$ cargo install cross
+[ubuntu]~$ cargo install cross
 ```
 
 >Note: Unlike the official instructions, adding lines to `Cross.toml` does not seem to be needed.
@@ -134,15 +146,15 @@ ubuntu@docker:~$ cargo install cross
 #### 3.3 Cross-build `probe-rs`
 
 ```
-ubuntu@docker:~$ git clone --depth=1 https://github.com/probe-rs/probe-rs
+[ubuntu]~$ git clone --depth=1 https://github.com/probe-rs/probe-rs
 ```
 
 ```
-ubuntu@docker:~$ cd probe-rs
+[ubuntu]~$ cd probe-rs
 ```
 
 ```
-ubuntu@docker:~/[...]$ cross build -p probe-rs-tools --release --target=armv7-unknown-linux-gnueabihf
+[ubuntu]~/[...]$ cross build -p probe-rs-tools --release --target=armv7-unknown-linux-gnueabihf
 [...]
     Finished `release` profile [optimized] target(s) in 7m 18s
 ```
@@ -157,7 +169,7 @@ We now have a Raspberry Pi 3B capable binary in `target/armv7-unknown-linux-gnue
 >```
 
 ```
-ubuntu@docker:~$ cd ~
+[ubuntu]~$ cd ~
 ```
 
 
@@ -187,7 +199,7 @@ probe-rs                				100%   28MB   4.3MB/s   00:06
 Once moved, we can test that the binary really runs:
 
 ```
-ubuntu@docker:~$ ssh -q probe-rs@192.168.1.199 -t 'bash -ic "probe-rs --version"'
+ubuntu@docker:~$ ssh -q probe-rs@192.168.1.199 -t 'bash -ic "./probe-rs --version"'
 probe-rs@192.168.1.199's password: 
 probe-rs 0.25.0 (git commit: v0.25.0-5-g9a767f2-modified)
 ```
@@ -294,6 +306,8 @@ Xtensa Chip:
 
 ## Clean-up
 
+>NOTE! You might want to keep the `docker` image around, e.g. for compiling the next version of `probe-rs`. 
+
 Once you have placed `probe-rs` on the target, there's no need for the `docker` VM to be kept around. Remove it by:
 
 ```
@@ -303,7 +317,7 @@ $ multipass delete --purge docker
 
 This releases some 9GB of your disk space.
 
->Note: Why stop it first? Multipass 1.14 and 1.15 have suffered from issues when changing state of running images. Stopping it first is a measure of caution.
+>Note: Why stop it first? Multipass 1.14 and 1.15 have suffered from issues when changing state of running images. Stopping it first is a pre-emptive measure.
 
 
 ## References
