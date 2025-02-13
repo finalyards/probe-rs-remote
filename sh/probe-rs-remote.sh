@@ -18,9 +18,6 @@ set -e
 # Requires:
 #   - ssh
 #
-# Credits:
-#   - ChatGPT (31-dec-24) was _instrumental_ in getting the syntax (bash arrays and quoting) right! :)
-#
 _PROBE_CACHE=.probe-rs/elf-cache  # manually create this on the target
 
 if [[ -z "$PROBE_RS_REMOTE" ]]; then
@@ -58,8 +55,10 @@ case "$1" in
     ;;
 
   *)
-    echo >&2 "Unsupported command: '$1'"
-    false
+    echo >&2 <<EOF
+Unsupported command: '$1'
+
+This command might exist, but it's not proxied further by '$0'.
+EOF
     ;;
 esac
-

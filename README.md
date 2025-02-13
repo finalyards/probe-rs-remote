@@ -1,17 +1,22 @@
 # `probe-rs` remote
 
+..and `espflash`
+
 ![](.images/cover.png)
 
-This repo provides a script to be run on a Mac/Linux developer account that makes [`probe-rs`](https://github.com/probe-rs/probe-rs) running *on another computer* feel like a local tool.
+This repo provides scripts to be run on a Mac/Linux developer account that make [`probe-rs`](https://github.com/probe-rs/probe-rs) and [`espflash`](https://github.com/esp-rs/espflash) running *on another computer* feel like a local tool.
 
 This allows:
 
-- galvanic separation of the attached electronics from the main development computer
-- developing open source code so that people can choose, whether they prefer local or remote `probe-rs`, without *any changes* to the build files
+- **galvanic separation** of the attached electronics from the main development computer
+- developing open source code so that people can choose, whether they prefer local or remote `probe-rs`/`espflash`, without *any changes* to the build files
 
 **Supported commands**
 
-`help`, `list`, `info`, `erase`, `reset`, `run`
+- `probe-rs`
+   - `help`, `list`, `info`, `erase`, `reset`, `run`
+- `espflash`
+   - `help`, `board-info`, `erase-*`, `hold-in-reset`, `monitor`, `reset`, `checksum-md5`, `flash`, `partition-table`, `write-bin`
 
 ## Requirements
 
@@ -37,6 +42,9 @@ Following [`[1]`](https://medium.com/@prateek.malhotra004/streamlining-secure-re
 >```
 >
 >Give some pw and press `ENTER` for the defaults.
+
+<p />
+>Note: Consider another user name if you find it confusing to use also `espflash` under the `probe-rs` user. `#legacy`
 
 On the development machine, create a key pair for using `ssh` without passwords:
 
@@ -97,12 +105,12 @@ The `PROBE_RS_REMOTE` is now available, even if you were to restart.
 
 The official commands for [installing `probe-rs`](https://probe.rs/docs/getting-started/installation/) do not support Raspberry Pi 3B<sup>`|1|`</sup>, but it can be [cross-compiled](https://probe.rs/docs/library/crosscompiling/) for the device.
 
-Follow [these instructions](cross/README.md) to:
+Follow instructions in [`docs/cross.md`](docs/cross.md) to:
 
-- cross-compile a `probe-rs` executable suitable for the Raspberry Pi
+- cross-compile `probe-rs` executable suitable for the Raspberry Pi
 - transfer it to the device
-- create a `probe-rs` user
 - make some system-wide additions (`udev` rules)
+- the same for `espflash`, too
 
 <small>
 >`|1|`:
@@ -122,7 +130,11 @@ We now have the remote machine all set up for running `probe-rs` via `ssh`.
 
 The script to use on your *development machine* is at [`sh/probe-rs-remote.sh`](sh/probe-rs-remote.sh). 
 
-Consider, whether you want to just copy it to your favourite location (e.g. `~/bin/`) alongside the `PATH` - or have a symbolic link pointing to a clone of this repo (this way, it'll be easy to update the script). 
+Consider, whether you want to:
+
+- a) just copy it to your favourite location (e.g. `~/bin/`), alongside the `PATH`, renaming to `probe-rs` in the process, or..
+
+- b) ..have a symbolic link pointing to a clone of this repo. This makes updates easier.
 
 **Create a '~/bin' folder on the PATH**
 
@@ -132,15 +144,13 @@ $ echo PATH="\$PATH:$HOME/bin" >> ~/.bashrc
 $ source ~/.bashrc
 ```
 
-**A - copy**
+**a) copy; independent**
 
 ```
-$ cp sh/probe-rs-remote.sh ~/bin
-$ cd ~/bin
-$ ln -s probe-rs-remote.sh probe-rs
+$ cp sh/probe-rs-remote.sh ~/bin/probe-rs
 ```
 
-**B - link to repo**
+**b) link; points to the repo**
 
 ```
 $ cd ~/bin
@@ -148,7 +158,7 @@ $ ln -s {path-to-repo}/sh/probe-rs-remote.sh probe-rs
 ```
 
 > [!WARN]
-> `alias` isn't enough. It would work for your interactive prompt, but not for build files which launch `bash` in a non-interactive mode. Cannot make this transparent for your build files with an `alias`. Tried.
+> An `alias` would work for your interactive prompt, but not for build files which launch `bash` in a non-interactive mode.
 
 Test:
 
@@ -182,6 +192,33 @@ $ probe-rs info
 The script only supports a limited number of commands. Have a look at its contents for more info.
 
 Now you have remote `probe-rs` working, transparently to your build systems. Yay! 🎉🎉
+
+## What about `espflash`?
+
+The process is very similar, but why would you want to have two separate flashing tools, in the first place?
+
+- Many ESP32 projects online use it; it'll be easier to run those.
+- `espflash` can use either of the USB ports (UART or JTAG) of your devkit; `probe-rs` uses USB/JTAG only
+- The approaches are different: since `probe-rs` goes deeper into the MCU, its use sometimes causes incompatibilities that use of `espflash` avoids.
+
+### Cross-compile
+
+Follow the same [`docs/cross.md`](docs/cross.md) instructions.
+
+### Testing
+
+On the development machine:
+
+```
+$ espflash board-info
+```
+
+>**Naming note!**
+>
+>We currently use the `probe-rs` remote user name, and `PROBE_RS_REMOTE` env.var. also for `espflash`. The reason is only historic - did the ssh bridging to `ssh`, first.
+>
+>You may suggest better suiting names!!
+
 
 ## References
 
