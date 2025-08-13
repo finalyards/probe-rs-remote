@@ -31,38 +31,6 @@ Developed on:
 
 ## Steps
 
-<!-- REMOVE tbd.
-### 1. Install tools (to WSL2 instance)
-
-We follow the instructions in [`mp`](https://github.com/akauppi/mp) repo for setting up a Rust build environment. 
-
-After this step, you have:
-
-- `cargo` installed
-- `rustfmt` plugin installed
-
-If you already have these, just skip to step 2.
-
-**Fetch the recipies**
-
-In a suitable (temporary) folder:
-
-```
-$ git clone --depth=1 https://github.com/akauppi/mp.git
-$ cd mp/rust/linux
-$ chmod a+x *.sh
-```
-
-This folder has three scripts; we'll run them all:
-
-```
-$ ls -1
-rustftm.sh
-rustup.sh
-shared-target.sh
-```
--->
-
 ### 1. Install Rust toolchain to WSL2
 
 ```
@@ -72,13 +40,9 @@ $ sudo apt-get update
 ```
 $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- \
   --default-toolchain none -y --profile minimal
-```
 
-```
 $ . $HOME/.cargo/env
-```
 
-```
 $ rustup default stable
 ```
 
@@ -98,10 +62,6 @@ info: downloading component 'rustfmt'
 info: installing component 'rustfmt'
 ```
 -->
-
->[!NOTE]
->
->If you needed to install some system-level packages (e.g. `pkg-config`) via `sudo apt install`, let the author know. Let's add them to the instructions.
 
 
 ### 2. Prepare the `rustembedded/cross:armv7-unknown-linux-gnueabihf` image - and use it!
@@ -400,13 +360,13 @@ Instructions on setting up a [Multipass](https://canonical.com/multipass) VM, ru
 Multipass [has `docker` built-in](https://ubuntu.com/blog/docker-on-mac-a-lightweight-option-with-multipass).
 
 ```
-$ multipass launch docker --memory 4GB --cpus 4
+$ multipass launch docker --name crossimage --memory 4GB --cpus 4
 Starting docker /
 [...]
 ```
 
 ```
-$ multipass shell docker
+$ multipass shell crossimage
 ```
 
 
