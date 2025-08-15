@@ -25,8 +25,9 @@ These instructions are for Ubuntu Linux, with Docker CLI installed. This can mea
 <!--
 Developed on:
 - Windows 10 Home
-- WSL 2.3.26.0
-- Docker Desktop 4.38.0
+- WSL 2.5.10
+- Ubuntu 24.04.3 (`lsb_release -A`)
+- Docker Desktop 4.43.2
 -->
 
 ## Steps
@@ -122,14 +123,22 @@ $ cd probe-rs
 It's way safer to use a released version than the current "head" of the `main` branch.
 
 ```
-[probe-rs] $ git checkout v0.27.0
+[probe-rs] $ git checkout v0.29.0
 ```
+
+>[!NOTE]
+>
+>There may be other versions available. Check with `git tag`. 
 
 ```
 [probe-rs] $ cross build -p probe-rs-tools --release --target=armv7-unknown-linux-gnueabihf
 [...]
-    Finished `release` profile [optimized] target(s) in 7m 18s
+    Finished `release` profile [optimized + debuginfo] target(s) in 7m 18s
 ```
+
+>[!NOTE]
+>
+>The author does not know, why the `--release` flag causes `debuginfo` to be included, nor whether it's important to have it. The binary size is > 100MB. Let's just... live with it.
 
 We now have a Raspberry Pi 3B capable binary in `target/armv7-unknown-linux-gnueabihf/release/probe-rs`.
 
@@ -141,7 +150,7 @@ We now have a Raspberry Pi 3B capable binary in `target/armv7-unknown-linux-gnue
 >```
 
 ```
-$ cd ..
+[probe-rs] $ cd ..
 ```
 
 #### 2.4 Cross-build `espflash` (optional)
@@ -157,18 +166,24 @@ $ cd espflash
 It's way safer to use a released version than the current "head" of the `main` branch.
 
 ```
-[espflash] $ git checkout v3.3.0
-```
-
-```
-[espflash] $ cross build -p espflash --release --target=armv7-unknown-linux-gnueabihf --no-default-features --features=cli
-[...]
-    Finished `release` profile [optimized] target(s) in 7m 18s
+[espflash] $ git checkout v4.0.1
 ```
 
 >[!NOTE]
 >
+>Again, use `git tag` to see other available versions.
+
+```
+[espflash] $ cross build -p espflash --release --target=armv7-unknown-linux-gnueabihf --no-default-features --features=cli
+[...]
+    Finished `release` profile [optimized] target(s) in 3m 56s
+```
+
+<!-- #R `udev` feature removed in `espflash` version 4.
+>[!NOTE]
+>
 >The author doesn't know, how to cross-compile with the `udev` feature. Omitting the feature merely means, you need modify groups when setting things up in the Raspberry Pi (we'll come to that, soon).
+-->
 
 We now have a Raspberry Pi 3B capable binary in `target/armv7-unknown-linux-gnueabihf/release/espflash`.
 
@@ -180,7 +195,7 @@ We now have a Raspberry Pi 3B capable binary in `target/armv7-unknown-linux-gnue
 >```
 
 ```
-[ubuntu]~$ cd ..
+[espflash] $ cd ..
 ```
 
 ### 3. Intermission!
@@ -189,7 +204,7 @@ The binaries are now done. We need to move them to the Raspberry Pi, and set up 
 
 At this moment, it's worth noting that you might want to **preserve the above (temporary) folder**. Why? 
 
-When neww releases of the tools arise, it's now enough for you to do `git pull` and rebuild. If you remove the folder and/or the Docker image, you'll need to start all from the beginning.
+When new releases of the tools arise, it's now enough for you to do `git pull` and rebuild. If you remove the folder and/or the Docker image, you'll need to start all from the beginning.
 
 
 ### 4. Move to the Raspberry Pi
@@ -213,7 +228,7 @@ probe-rs@192.168.1.199's password:
 probe-rs                				100%   28MB   4.3MB/s   00:06
 ```
 
->Note: You were asked for a pw, if the WSL2 instance isn't keypair connected with your Raspberry Pi. Since these are just a rare accesses, entering the pw is fine.
+>Note: You were asked for a pw, if the WSL2 instance isn't keypair connected with your Raspberry Pi.
 
 #### 4.2 Repeat for `espflash`
 
@@ -270,10 +285,14 @@ probe-rs@rpi:~ $ source ~/.bashrc
 >
 >```
 >probe-rs@rpi:~ $ probe-rs version
->probe-rs 0.25.0 (git commit: 5805879)
+>probe-rs 0.29.0 (git commit: 5805879)
 >```
 
 #### RPi's `udev` configuration
+
+>[NOTE!]
+>
+>`udev` used to be a thing with `espflash` v3. Not sure, whether this is needed with v4 (the `udev` feature was removed). But here goes.
 
 Next, we'll set up [`udev` rules](https://probe.rs/docs/getting-started/probe-setup/#linux%3A-udev-rules) so that accessing the MCUs will not need `root` priviledges.
 
@@ -308,7 +327,9 @@ Without this, some commands like `probe-rs info` - and flashing - won't work fro
 Now, we are ready!!!  
 
 
-#### Suggestion to keep multiple versions (optional)
+## Optional
+
+### Suggestion to keep multiple versions (optional)
 
 Above, we simply moved the binaries to `~/bin` and that's it.
 
@@ -326,7 +347,7 @@ lrwxrwxrwx 1 probe-rs probe-rs       15 Feb  2 23:01 probe-rs -> probe-rs.0.26.0
 -rwxr-xr-x 1 probe-rs probe-rs 30548776 Jan 20 16:09 probe-rs.0.26.0
 ```
 
-The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link, you can up- or downgrade your actual tool version, without changing anything on the developer account.
+The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link (`ln -s probe-rs.0.29.0 probe-rs`), you can up- or downgrade your actual tool version, without changing anything on the developer account.
 
 
 ## Test with a development board

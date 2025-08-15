@@ -2,6 +2,10 @@
 
 ..and `espflash`
 
+>Note: `probe-rs` has since making this repo added a ["basic remote server"](https://github.com/probe-rs/probe-rs/pull/3003) (GitHub PR) as a built-in feature. That may or may not be a better way to go - you should check.
+>
+>---
+
 ![](.images/cover.png)
 
 This repo provides scripts to be run on a Mac/Linux developer account that make [`probe-rs`](https://github.com/probe-rs/probe-rs) and [`espflash`](https://github.com/esp-rs/espflash) running *on another computer* feel like a local tool.
