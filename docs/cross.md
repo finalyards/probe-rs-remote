@@ -20,7 +20,7 @@ These instructions are for Ubuntu Linux, with Docker CLI installed. This can mea
 - An Ubuntu Linux VM
 
 >[!HINT]
->If you are on a Mac, or don't want to install Docker on your main system, have a look at [Appendix A. Multipass and Docker](#), to create a suitable VM.
+>If you are on a Mac, or don't want to install Docker on your main system, have a look at [Appendix A. Multipass and Docker](#appendix-a-multipass-and-docker), to create a suitable VM.
 
 <!--
 Developed on:
@@ -347,7 +347,7 @@ lrwxrwxrwx 1 probe-rs probe-rs       15 Feb  2 23:01 probe-rs -> probe-rs.0.26.0
 -rwxr-xr-x 1 probe-rs probe-rs 30548776 Jan 20 16:09 probe-rs.0.26.0
 ```
 
-The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link (`ln -s probe-rs.0.29.1 probe-rs`), you can up- or downgrade your actual tool version, without changing anything on the developer account.
+The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link (`ln -sf probe-rs.0.29.1 probe-rs`), you can up- or downgrade your actual tool version, without changing anything on the developer account.
 
 
 ## Test with a development board
