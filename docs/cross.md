@@ -123,12 +123,12 @@ $ cd probe-rs
 It's way safer to use a released version than the current "head" of the `main` branch.
 
 ```
-[probe-rs] $ git checkout v0.29.0
+[probe-rs] $ git checkout v0.29.1
 ```
 
 >[!NOTE]
 >
->There may be other versions available. Check with `git tag`. 
+>There may be other versions available. Check with `git fetch -t; git tag`. 
 
 ```
 [probe-rs] $ cross build -p probe-rs-tools --release --target=armv7-unknown-linux-gnueabihf
@@ -171,7 +171,7 @@ It's way safer to use a released version than the current "head" of the `main` b
 
 >[!NOTE]
 >
->Again, use `git tag` to see other available versions.
+>Again, use `git fetch -t; git tag` to see other available versions.
 
 ```
 [espflash] $ cross build -p espflash --release --target=armv7-unknown-linux-gnueabihf --no-default-features --features=cli
@@ -285,7 +285,7 @@ probe-rs@rpi:~ $ source ~/.bashrc
 >
 >```
 >probe-rs@rpi:~ $ probe-rs version
->probe-rs 0.29.0 (git commit: 5805879)
+>probe-rs 0.29.1 (git commit: 5805879)
 >```
 
 #### RPi's `udev` configuration
@@ -347,7 +347,7 @@ lrwxrwxrwx 1 probe-rs probe-rs       15 Feb  2 23:01 probe-rs -> probe-rs.0.26.0
 -rwxr-xr-x 1 probe-rs probe-rs 30548776 Jan 20 16:09 probe-rs.0.26.0
 ```
 
-The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link (`ln -s probe-rs.0.29.0 probe-rs`), you can up- or downgrade your actual tool version, without changing anything on the developer account.
+The names of the binaries carry their version, and `~/bin/probe-rs` and `~/bin/espflash` are mere links to the latest version. By changing that link (`ln -s probe-rs.0.29.1 probe-rs`), you can up- or downgrade your actual tool version, without changing anything on the developer account.
 
 
 ## Test with a development board
