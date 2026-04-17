@@ -13,7 +13,7 @@ set -e
 #         erase-flash
 #         erase-parts
 #         erase-region
-#         flash
+#         flash [--partition-table <file>]
 #         hold-in-reset
 #         monitor
 #         partition-table
@@ -55,7 +55,40 @@ case "$1" in
     else
       _ELF_LOCAL=$_LAST
       _ELF_REMOTE=$_PROBE_CACHE/$(basename $_LAST)  # .probe-rs/elf-cache/m3
-      _QUOTED_ALL_BUT_LAST=$(quote_params "${_ALL_BUT_LAST[@]}")
+      #r _QUOTED_ALL_BUT_LAST=$(quote_params "${_ALL_BUT_LAST[@]}")
+
+      # If '--partition-table <file>' is there, we need to a) upload the file, b) modify the file parameter.
+      #
+      # COPILOT implemented block
+      _UPDATED_ARGS=()
+      _PT_REMOTE=""
+      i=0
+      while [[ $i -lt ${#_ALL_BUT_LAST[@]} ]]; do
+        arg="${_ALL_BUT_LAST[$i]}"
+
+        if [[ "$arg" == "--partition-table" ]]; then
+          pt_local="${_ALL_BUT_LAST[$((i+1))]}"
+          pt_base=$(basename "$pt_local")
+          pt_remote="$_PROBE_CACHE/$pt_base"
+
+          echo "Uploading partition table: $pt_local → $pt_remote"
+          scp "$pt_local" "$PROBE_RS_REMOTE:$pt_remote"
+
+          # Replace the pair in the argument list
+          _UPDATED_ARGS+=("--partition-table" "$pt_remote")
+
+          # Skip next argument (the filename)
+          i=$((i+2))
+          continue
+        fi
+
+        _UPDATED_ARGS+=("$arg")
+        i=$((i+1))
+      done
+
+      # Replace original quoted args with updated ones
+      _QUOTED_ALL_BUT_LAST=$(quote_params "${_UPDATED_ARGS[@]}")
+      #/COPILOT
 
       scp $_ELF_LOCAL $PROBE_RS_REMOTE:$_ELF_REMOTE
 
